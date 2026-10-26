@@ -1,0 +1,17 @@
+{
+  "name": "prview",
+  "version": "1.0.0",
+  "description": "A self-hosted, TV-ready dashboard for your open GitHub pull requests.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "dev": "node --env-file-if-exists=.env --watch server/index.mjs",
+    "setup": "node scripts/setup.mjs",
+    "test": "node --test",
+    "check": "node scripts/check.mjs"
+  },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/samirhvbr/prview.git" }
+}

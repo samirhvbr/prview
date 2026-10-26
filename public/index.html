@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      name="description"
+      content="Seus pull requests em aberto, do mais antigo ao mais recente. Um painel feito para ficar à vista."
+    />
+    <title>PRVIEW · Pull requests em aberto</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#queue">Ir para os pull requests</a>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="PRVIEW, início">
+          <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M9 10v12M23 22v-7a7 7 0 0 0-7-7h-1m3-3-3 3 3 3" />
+            <circle cx="9" cy="7" r="3" />
+            <circle cx="9" cy="25" r="3" />
+            <circle cx="23" cy="25" r="3" />
+          </svg>
+          <span
+            >PR<span class="brand-light">VIEW</span
+            ><span class="brand-period">.</span></span
+          >
+        </a>
+        <span class="topbar-divider" aria-hidden="true"></span>
+        <span class="topbar-label">CONTRIBUTION MONITOR</span>
+        <div class="topbar-right">
+          <span id="connection" class="connection"
+            ><span class="status-dot"></span
+            ><span id="connection-text">Conectando</span></span
+          >
+          <time id="clock" class="clock" aria-label="Horário local"
+            >--:--:--</time
+          >
+          <span id="today" class="today"></span>
+        </div>
+      </header>
+
+      <main>
+        <section class="heading-row" aria-labelledby="page-title">
+          <div>
+            <div class="eyebrow">
+              <span class="accent-line"></span> ACOMPANHAMENTO DE PULL REQUESTS
+            </div>
+            <h1 id="page-title">Tudo aberto. <span>Tudo à vista.</span></h1>
+            <p class="subtitle">
+              <span id="author" class="author">GitHub</span
+              ><span class="subtitle-dot">·</span>Do mais antigo ao mais
+              recente, sempre.
+            </p>
+          </div>
+          <div class="view-actions">
+            <button
+              id="refresh"
+              class="button button-icon"
+              type="button"
+              aria-label="Atualizar dados"
+              title="Atualizar dados"
+            >
+              <span aria-hidden="true">↻</span>
+            </button>
+            <button
+              id="fullscreen"
+              class="button button-icon"
+              type="button"
+              aria-label="Entrar em tela cheia"
+              title="Tela cheia"
+            >
+              <span aria-hidden="true">⛶</span>
+            </button>
+            <button
+              id="tv-mode"
+              class="button button-dark"
+              type="button"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <rect x="2" y="3" width="16" height="11" rx="2" />
+                <path d="M7 17h6m-3-3v3" /></svg
+              ><span>Modo TV</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="Resumo dos pull requests">
+          <article class="metric metric-primary">
+            <div class="metric-label">
+              <span>PRs em aberto</span
+              ><span class="metric-mark" aria-hidden="true">↗</span>
+            </div>
+            <div class="metric-value" id="metric-total">—</div>
+            <div class="metric-note">Contribuições em andamento</div>
+            <span class="metric-decoration" aria-hidden="true"></span>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              <span>Repositórios</span
+              ><span class="metric-icon" aria-hidden="true">▤</span>
+            </div>
+            <div class="metric-value" id="metric-repos">—</div>
+            <div class="metric-note">Projetos com PRs abertos</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              <span>Aguardando revisão</span
+              ><span class="metric-icon" aria-hidden="true">◉</span>
+            </div>
+            <div class="metric-value" id="metric-review">—</div>
+            <div class="metric-note">Prontos para um novo olhar</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              <span>Mais antigo</span
+              ><span class="metric-icon" aria-hidden="true">◷</span>
+            </div>
+            <div class="metric-value metric-age">
+              <span id="metric-oldest">—</span
+              ><span id="metric-oldest-unit" class="metric-unit"></span>
+            </div>
+            <div class="metric-note" id="oldest-repo">
+              Aguardando primeira leitura
+            </div>
+          </article>
+        </section>
+
+        <div id="notice" class="notice" role="status" hidden>
+          <span class="notice-icon" aria-hidden="true">!</span>
+          <div>
+            <strong id="notice-title"></strong><span id="notice-detail"></span>
+          </div>
+        </div>
+
+        <section class="queue-panel" id="queue" aria-labelledby="queue-title">
+          <div class="queue-toolbar">
+            <div class="queue-heading">
+              <h2 id="queue-title">Fila de contribuições</h2>
+              <span id="filtered-count" class="count-pill">—</span
+              ><span class="order-label"
+                ><span aria-hidden="true">↓</span> Mais antigos primeiro</span
+              >
+            </div>
+            <div class="filters" id="filters">
+              <label class="search-box"
+                ><span aria-hidden="true">⌕</span
+                ><span class="sr-only">Buscar pull requests</span
+                ><input
+                  id="search"
+                  type="search"
+                  placeholder="Buscar PR ou repositório…"
+                  autocomplete="off"
+                  maxlength="200"
+              /></label>
+              <label
+                ><span class="sr-only">Filtrar por repositório</span
+                ><select id="repo-filter">
+                  <option value="">Todos os repositórios</option>
+                </select></label
+              >
+              <label
+                ><span class="sr-only">Filtrar por status</span
+                ><select id="status-filter">
+                  <option value="">Todos os status</option>
+                  <option value="attention">Precisam de atenção</option>
+                  <option value="review">Aguardando revisão</option>
+                  <option value="approved">Aprovados</option>
+                  <option value="draft">Rascunhos</option>
+                </select></label
+              >
+            </div>
+          </div>
+          <div id="filter-summary" class="filter-summary" hidden>
+            <span class="filter-summary-label">FILTROS ATIVOS</span
+            ><span id="filter-summary-text"></span
+            ><span class="filter-summary-note"
+              >Resumo acima considera todos os PRs.</span
+            >
+          </div>
+          <div class="table-header" aria-hidden="true">
+            <span>REPOSITÓRIO / PULL REQUEST</span><span>REVISÃO</span
+            ><span>CHECKS</span
+            ><span>ABERTO HÁ <span class="sort-arrow">↓</span></span
+            ><span>ATIVIDADE</span>
+          </div>
+          <div
+            id="rows"
+            class="pr-rows"
+            aria-label="Lista de pull requests"
+          ></div>
+          <div id="empty-state" class="empty-state">
+            <span id="empty-icon" class="empty-icon" aria-hidden="true">↗</span>
+            <h3 id="empty-title">Buscando suas contribuições</h3>
+            <p id="empty-description">
+              Consultando todos os PRs no GitHub. A primeira leitura pode levar
+              alguns instantes.
+            </p>
+            <button id="clear-filters" class="button" type="button" hidden>
+              Limpar filtros
+            </button>
+          </div>
+          <div class="queue-footer">
+            <span id="range" class="range">Aguardando dados</span>
+            <div class="pagination">
+              <button
+                id="rotate"
+                class="rotation-toggle"
+                type="button"
+                aria-pressed="true"
+              >
+                <span id="rotate-icon" aria-hidden="true">Ⅱ</span
+                ><span id="rotate-label">Rotação automática</span></button
+              ><progress
+                id="page-progress"
+                max="100"
+                value="0"
+                aria-label="Tempo para a próxima página"
+              ></progress>
+              <div class="page-controls">
+                <button
+                  id="previous"
+                  class="page-button"
+                  type="button"
+                  aria-label="Página anterior"
+                >
+                  ←</button
+                ><span id="page-indicator" class="page-indicator"
+                  >01 <span>/ 01</span></span
+                ><button
+                  id="next"
+                  class="page-button"
+                  type="button"
+                  aria-label="Próxima página"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="app-footer">
+        <div>
+          <span class="footer-dot" aria-hidden="true"></span> GITHUB
+          <span class="footer-separator">/</span> SOMENTE LEITURA
+          <span class="footer-separator">/</span> ATUALIZAÇÃO AUTOMÁTICA
+        </div>
+        <span id="sync-status">Aguardando sincronização</span>
+      </footer>
+    </div>
+  </body>
+</html>
