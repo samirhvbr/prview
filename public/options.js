@@ -36,7 +36,8 @@ export function parseDisplayOptions(search, { savedTv = false } = {}) {
     rotate: params.has('rotate') ? params.get('rotate') === '1' : true,
     pageSeconds: params.has('page_seconds') ? Number(params.get('page_seconds')) : null,
     pageSize: params.has('page_size') ? Number(params.get('page_size')) : null,
-    reloadSeconds: params.has('reload_seconds') ? Number(params.get('reload_seconds')) : 120,
+    // Full reload interrupts interactive filters; enable it only through the link.
+    reloadSeconds: params.has('reload_seconds') ? Number(params.get('reload_seconds')) : 0,
     repo: params.get('repo') ?? '',
     status: params.get('status') ?? '',
     query: params.get('q') ?? '',

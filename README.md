@@ -36,7 +36,7 @@ O link autoriza o navegador sem tela de login. O servidor cria um cookie e redir
 
 - A lista permanece ordenada pela data de criação, da mais antiga para a mais recente.
 - As páginas alternam automaticamente; é possível pausar e navegar manualmente.
-- A tela inteira recarrega a cada 2 minutos, preservando a posição da página e as opções do link.
+- Os dados atualizam automaticamente sem recarregar a tela, mantendo a pesquisa e os filtros selecionados. A recarga completa fica desligada por padrão; use `reload_seconds=120` no link para ativá-la a cada 2 minutos.
 - O modo TV prioriza a leitura à distância, e o botão de tela cheia usa o recurso do navegador.
 - Pesquisa e filtros ajudam a localizar um repositório ou estado de revisão.
 - Revisões, verificações, rascunhos, idade do PR e última atividade ajudam a identificar pendências.
@@ -54,7 +54,7 @@ Monte um link para cada TV com os parâmetros GET abaixo. Eles podem ser combina
 | `tv` | `1` ou `0` | Liga ou desliga o modo TV, prevalecendo sobre a preferência salva no navegador |
 | `rotate` | `1` ou `0` | Liga ou pausa a rotação automática das páginas |
 | `page_seconds` | Inteiro de `5` a `300` | Substitui `PAGE_SECONDS` apenas para a rotação nesse navegador |
-| `reload_seconds` | `0` ou inteiro de `30` a `86400` | Intervalo para recarregar a página inteira; padrão `120` segundos em qualquer modo, `0` desativa |
+| `reload_seconds` | `0` ou inteiro de `30` a `86400` | Intervalo para recarregar a página inteira; padrão `0` (desligado), ativado somente por um valor válido e explícito na URL |
 | `page_size` | Inteiro de `1` a `20` | Fixa quantos PRs aparecem por página; sem ele, o tamanho é calculado conforme a tela |
 | `repo` | `proprietario/repositorio` | Filtra pelo nome completo e exato do repositório |
 | `status` | `attention`, `review`, `approved` ou `draft` | Filtra pelo estado descrito abaixo |
@@ -82,7 +82,9 @@ http://localhost:3000/?token=SEU_DASHBOARD_TOKEN&q=fix%20timeout
 
 Depois de autorizar o primeiro exemplo, o endereço fica `/?tv=1&rotate=1&page_seconds=20&page_size=8&reload_seconds=120`. Apenas o token sai; as opções válidas permanecem. Codifique caracteres especiais nos valores, como `/` em `repo` (`%2F`) e espaços em `q` (`%20`).
 
-Os três intervalos têm funções distintas: `page_seconds` alterna as páginas da lista, `reload_seconds` recarrega o documento no navegador e `REFRESH_SECONDS` controla o cache e as consultas ao GitHub no servidor. Recarregar a tela não força uma consulta fora desse intervalo. O índice da página é guardado em `sessionStorage` para retomar a posição após a recarga; os dados dos PRs não são persistidos ali. As opções GET continuam na URL.
+Os três intervalos têm funções distintas: `page_seconds` alterna as páginas da lista, `reload_seconds` recarrega o documento no navegador quando ativado e `REFRESH_SECONDS` controla o cache e as consultas ao GitHub no servidor. Sem `reload_seconds`, ou com valor inválido, duplicado ou `0`, a tela não recarrega automaticamente. A atualização dos dados pela API continua funcionando e mantém a pesquisa e os filtros da interface.
+
+Quando a recarga completa é ativada, ela não força uma consulta fora do intervalo do servidor. O índice da página é guardado em `sessionStorage`, quando disponível, para retomar a posição se os filtros salvos corresponderem aos da URL; os dados dos PRs não são persistidos ali. As opções GET continuam na URL, mas alterações de pesquisa e filtros feitas somente na interface não são restauradas após uma recarga completa. Para uma TV com recarga ativada, configure também os filtros desejados no link.
 
 Para desligar o modo TV mesmo que ele esteja salvo no navegador, use `tv=0`. Sem `tv` na URL, vale a preferência local. Apagar os dados do site no navegador remove essa preferência e também pode remover a sessão; nesse caso, reabra o link original com token.
 
@@ -193,7 +195,9 @@ Use Node.js 24+, clone the repository, run `npm run setup`, and edit `.env`. Set
 
 Configure each display through its URL, for example `/?token=YOUR_DASHBOARD_TOKEN&tv=1&rotate=1&page_seconds=20&page_size=8&reload_seconds=120`. Supported options are `tv=1|0`, `rotate=1|0`, `page_seconds=5..300`, `page_size=1..20`, `reload_seconds=0|30..86400`, `repo=owner/name`, `status=attention|review|approved|draft`, and `q` with up to 200 characters. Invalid values are ignored. The token exchange preserves valid display options and removes the token. URL filters remain active in TV mode; they are display preferences, not access restrictions. `tv=0` overrides a saved TV preference. Native fullscreen still needs a browser gesture, so configure kiosk mode at the browser or OS level for unattended startup.
 
-The browser reloads the full page every 120 seconds by default in all modes; use `reload_seconds=0` to disable it. The page index is retained in `sessionStorage`, without storing PR data. This is separate from page rotation (`page_seconds`) and the server's GitHub refresh interval (`REFRESH_SECONDS`); a document reload does not bypass the server cache.
+Full-page reload is disabled by default. Set an explicit `reload_seconds=120` in the URL to enable a two-minute reload, for example on a TV. Missing, invalid, duplicate, or zero values leave reload disabled. Automatic API data updates continue without reloading the document and preserve the current search and filters.
+
+When full-page reload is enabled, the page index is retained in `sessionStorage`, when available, and restored only if the saved filters match the URL filters. PR data is not stored there. URL options survive reloads; search and filter changes made only in the interface do not. Configure the desired filters in the URL for displays with reload enabled. Full-page reload is separate from page rotation (`page_seconds`) and the server's GitHub refresh interval (`REFRESH_SECONDS`); it does not bypass the server cache.
 
 The GitHub token stays on the server. The independent dashboard token exchanges for an HTTP-only session cookie; anyone holding that link can read the complete configured board, including visible private PR metadata. Use HTTPS and `COOKIE_SECURE=true` for hosting, avoid query-string logging, and rotate the dashboard token to revoke all sessions. GitHub permissions and API limits determine coverage and refresh availability.
 

@@ -4,7 +4,7 @@ import { parseDisplayOptions, sanitizeDisplayParams, filterKey, readSavedPage } 
 
 test('display options keep existing defaults when the link has no options', () => {
   assert.deepEqual(parseDisplayOptions(''), {
-    tv: false, rotate: true, pageSeconds: null, pageSize: null, reloadSeconds: 120, repo: '', status: '', query: '',
+    tv: false, rotate: true, pageSeconds: null, pageSize: null, reloadSeconds: 0, repo: '', status: '', query: '',
   });
   assert.equal(parseDisplayOptions('', { savedTv: true }).tv, true);
 });
@@ -17,17 +17,21 @@ test('an explicit TV option overrides either saved preference', () => {
 
 test('a shared screen link configures modes, pagination and filters together', () => {
   assert.deepEqual(parseDisplayOptions('?tv=1&rotate=0&page_seconds=20&page_size=8&repo=samirhvbr%2Fprview&status=attention&q=fix+cache'), {
-    tv: true, rotate: false, pageSeconds: 20, pageSize: 8, reloadSeconds: 120, repo: 'samirhvbr/prview', status: 'attention', query: 'fix cache',
+    tv: true, rotate: false, pageSeconds: 20, pageSize: 8, reloadSeconds: 0, repo: 'samirhvbr/prview', status: 'attention', query: 'fix cache',
   });
 });
 
-test('full document reload defaults to two minutes and accepts disable or bounded intervals', () => {
-  assert.equal(parseDisplayOptions('').reloadSeconds, 120);
+test('full document reload is opt-in and accepts disable or bounded intervals', () => {
+  assert.equal(parseDisplayOptions('').reloadSeconds, 0);
+  assert.equal(parseDisplayOptions('?tv=1').reloadSeconds, 0);
+  assert.equal(parseDisplayOptions('?status=attention&q=retry').reloadSeconds, 0);
   assert.equal(parseDisplayOptions('?reload_seconds=0').reloadSeconds, 0);
+  assert.equal(parseDisplayOptions('?reload_seconds=120').reloadSeconds, 120);
   assert.equal(parseDisplayOptions('?reload_seconds=30').reloadSeconds, 30);
   assert.equal(parseDisplayOptions('?reload_seconds=86400').reloadSeconds, 86400);
+  assert.equal(parseDisplayOptions('?reload_seconds=30&reload_seconds=120').reloadSeconds, 0);
   for (const value of ['-1', '1', '29', '86401', '1.5', '1e3', 'Infinity', 'no', '']) {
-    assert.equal(parseDisplayOptions(`?reload_seconds=${value}`).reloadSeconds, 120, value);
+    assert.equal(parseDisplayOptions(`?reload_seconds=${value}`).reloadSeconds, 0, value);
   }
 });
 
